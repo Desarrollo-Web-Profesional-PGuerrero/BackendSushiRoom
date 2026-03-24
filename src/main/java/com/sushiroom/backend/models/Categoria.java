@@ -1,7 +1,9 @@
+// src/main/java/com/sushiroom/backend/models/Categoria.java
 package com.sushiroom.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Data
@@ -12,14 +14,13 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 100)
     private String nombre;
-
     private String descripcion;
 
     @Column(name = "imagen_url")
     private String imagenUrl;
 
-    @OneToMany(mappedBy = "categoria")
+    @OneToMany(mappedBy = "categoria", fetch = FetchType.LAZY)
+    @JsonIgnore  // Esto evita la recursión infinita
     private List<Producto> productos;
 }
