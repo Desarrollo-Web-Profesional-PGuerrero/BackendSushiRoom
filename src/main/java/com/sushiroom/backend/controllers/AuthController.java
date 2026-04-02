@@ -5,7 +5,6 @@ import com.sushiroom.backend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +21,8 @@ public class AuthController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> credentials) {
@@ -31,23 +31,14 @@ public class AuthController {
         
         Map<String, Object> response = new HashMap<>();
         
-        // Buscar usuario por email
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             
-            // Verificar si el usuario es admin
-            if (!"admin".equals(usuario.getRol())) {
-                response.put("success", false);
-                response.put("message", "No tienes permisos de administrador");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-            }
-            
-            // Verificar contraseña
+            // Verificar contraseña encriptada
             if (passwordEncoder.matches(password, usuario.getPasswordHash())) {
                 response.put("success", true);
-                response.put("message", "Login exitoso");
                 response.put("nombre", usuario.getNombre());
                 response.put("email", usuario.getEmail());
                 response.put("rol", usuario.getRol());
@@ -60,7 +51,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
     
-    // Endpoint para registrar nuevo usuario (opcional, para crear admins)
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, String> userData) {
         String email = userData.get("email");
@@ -70,19 +60,18 @@ public class AuthController {
         
         Map<String, Object> response = new HashMap<>();
         
-        // Verificar si el email ya existe
         if (usuarioRepository.existsByEmail(email)) {
             response.put("success", false);
             response.put("message", "El email ya está registrado");
             return ResponseEntity.badRequest().body(response);
         }
         
-        // Crear nuevo usuario
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setEmail(email);
-        nuevoUsuario.setPasswordHash(passwordEncoder.encode(password));
+        nuevoUsuario.setPasswordHash(passwordEncoder.encode(password)); // Encriptar
         nuevoUsuario.setNombre(nombre);
         nuevoUsuario.setRol(rol);
+        nuevoUsuario.setActivo(true);
         nuevoUsuario.setFechaRegistro(LocalDateTime.now());
         
         usuarioRepository.save(nuevoUsuario);
