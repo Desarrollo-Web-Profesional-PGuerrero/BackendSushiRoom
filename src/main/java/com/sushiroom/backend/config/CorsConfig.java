@@ -1,3 +1,4 @@
+// BackendSushiRoom/src/main/java/com/sushiroom/backend/config/CorsConfig.java
 package com.sushiroom.backend.config;
 
 import org.springframework.context.annotation.Configuration;
