@@ -25,4 +25,7 @@ public class Usuario {
 
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
+
+    // Agrega este campo si no existe
+private Boolean activo = true;
 }
