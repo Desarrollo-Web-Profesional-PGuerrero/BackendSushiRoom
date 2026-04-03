@@ -1,4 +1,3 @@
-// BackendSushiRoom/src/main/java/com/sushiroom/backend/config/CorsConfig.java
 package com.sushiroom.backend.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +9,12 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173")
+        registry.addMapping("/api/**")
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "http://localhost:5174",
+                        "https://frontendsushiroom-production-9cb5.up.railway.app"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
