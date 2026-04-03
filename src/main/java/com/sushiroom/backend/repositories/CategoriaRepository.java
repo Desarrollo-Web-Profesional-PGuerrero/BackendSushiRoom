@@ -1,3 +1,4 @@
+// File: BackendSushiRoom/src/main/java/com/sushiroom/backend/repositories/CategoriaRepository.java
 package com.sushiroom.backend.repositories;
 
 import com.sushiroom.backend.models.Categoria;
