@@ -1,10 +1,10 @@
-// services/ProductoService.java
 package com.sushiroom.backend.services;
 
 import com.sushiroom.backend.models.Producto;
 import com.sushiroom.backend.repositories.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,13 +27,24 @@ public class ProductoService {
             .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
     }
     
+    @Transactional  // ← AGREGAR ESTO
     public Producto save(Producto producto) {
+        System.out.println("=== GUARDANDO PRODUCTO ===");
+        System.out.println("Nombre: " + producto.getNombre());
+        System.out.println("Precio: " + producto.getPrecio());
+        System.out.println("Categoria ID: " + (producto.getCategoria() != null ? producto.getCategoria().getId() : "null"));
+        
         if (producto.getFechaCreacion() == null) {
             producto.setFechaCreacion(LocalDateTime.now());
         }
-        return productoRepository.save(producto);
+        
+        Producto saved = productoRepository.save(producto);
+        System.out.println("Producto guardado con ID: " + saved.getId());
+        
+        return saved;
     }
     
+    @Transactional
     public void deleteById(Integer id) {
         productoRepository.deleteById(id);
     }

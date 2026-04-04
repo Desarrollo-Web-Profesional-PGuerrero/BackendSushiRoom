@@ -42,7 +42,7 @@ public class SecurityConfig {
                 "http://localhost:5174",
                 "https://frontendsushiroom-production-9cb5.up.railway.app"  // ← Agrega esta línea
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);  // Agrega esto para mejorar rendimiento

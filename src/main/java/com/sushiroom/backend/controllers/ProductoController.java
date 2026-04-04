@@ -21,10 +21,10 @@ public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
-    
+
     @Autowired
     private CategoriaService categoriaService;
-    
+
     @PostConstruct
     public void init() {
         categoriaService.inicializarCategoriasBasicas();
@@ -43,13 +43,12 @@ public class ProductoController {
         Producto producto = productoService.findById(id);
         return convertToDTO(producto);
     }
-    
+
     @GetMapping("/categorias")
-    public ResponseEntity<List<Categoria>> getAllCategorias() {
-        List<Categoria> categorias = categoriaService.findAllByOrderByNombreAsc();
-        return ResponseEntity.ok(categorias);
+    public ResponseEntity<List<Categoria>> getCategorias() {
+        return ResponseEntity.ok(categoriaService.findAll());
     }
-    
+
     @GetMapping("/categorias/activas")
     public ResponseEntity<List<Categoria>> getCategoriasActivas() {
         List<Categoria> categorias = categoriaService.findCategoriasWithProductosActivos();
@@ -75,7 +74,7 @@ public class ProductoController {
             if (productoExistente == null) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             // Actualizar campos
             productoExistente.setNombre(productoDTO.getNombre());
             productoExistente.setDescripcion(productoDTO.getDescripcion());
@@ -83,14 +82,11 @@ public class ProductoController {
             productoExistente.setNotasCata(productoDTO.getNotasCata());
             productoExistente.setPrecio(productoDTO.getPrecio());
             productoExistente.setImagenUrl(productoDTO.getImagenUrl());
-            productoExistente.setActivo(productoDTO.getActivo());
-            
+            productoExistente.setActivo(true);
+
             // Actualizar categoría
             if (productoDTO.getCategoriaId() != null) {
                 Categoria categoria = categoriaService.findById(productoDTO.getCategoriaId());
-                productoExistente.setCategoria(categoria);
-            } else if (productoDTO.getCategoriaNombre() != null && !productoDTO.getCategoriaNombre().isEmpty()) {
-                Categoria categoria = categoriaService.findByNombre(productoDTO.getCategoriaNombre().toLowerCase());
                 productoExistente.setCategoria(categoria);
             }
             
@@ -109,11 +105,11 @@ public class ProductoController {
             if (producto == null) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             // Soft delete - solo desactivar
             producto.setActivo(false);
             productoService.save(producto);
-            
+
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,7 +124,7 @@ public class ProductoController {
             if (producto == null) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             producto.setActivo(!producto.getActivo());
             Producto productoActualizado = productoService.save(producto);
             return ResponseEntity.ok(convertToDTO(productoActualizado));
@@ -148,7 +144,7 @@ public class ProductoController {
         producto.setPrecio(dto.getPrecio());
         producto.setImagenUrl(dto.getImagenUrl());
         producto.setActivo(dto.getActivo() != null ? dto.getActivo() : true);
-        
+
         // Asignar categoría
         if (dto.getCategoriaId() != null) {
             try {
@@ -171,7 +167,7 @@ public class ProductoController {
                 producto.setCategoria(nuevaCategoria);
             }
         }
-        
+
         return producto;
     }
 

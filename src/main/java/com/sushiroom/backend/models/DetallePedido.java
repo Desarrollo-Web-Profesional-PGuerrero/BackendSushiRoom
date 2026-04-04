@@ -2,6 +2,7 @@ package com.sushiroom.backend.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 
 @Data
@@ -14,11 +15,11 @@ public class DetallePedido {
 
     @ManyToOne
     @JoinColumn(name = "pedido_id", nullable = false)
+    @JsonIgnore
     private Pedido pedido;
 
-    @ManyToOne
-    @JoinColumn(name = "producto_id", nullable = false)
-    private Producto producto;
+    @Column(name = "producto_id")
+    private Integer productoId;
 
     @Column(name = "nombre_producto", nullable = false, length = 200)
     private String nombreProducto;
