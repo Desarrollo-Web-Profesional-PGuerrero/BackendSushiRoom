@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pedidos")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000"})
 public class PedidoController {
 
     @Autowired
@@ -37,7 +37,6 @@ public class PedidoController {
     @GetMapping
     public ResponseEntity<List<Pedido>> getAllPedidos() {
         List<Pedido> pedidos = pedidoRepository.findAllByOrderByFechaPedidoDesc();
-        // Limpiar la referencia circular en cada pedido
         pedidos.forEach(pedido -> {
             if (pedido.getDetalles() != null) {
                 pedido.getDetalles().forEach(detalle -> detalle.setPedido(null));
@@ -65,32 +64,19 @@ public class PedidoController {
         return ResponseEntity.ok(response);
     }
 
-    // Buscar pedido por ID o número de pedido (para clientes)
-    @GetMapping("/buscar/{identificador}")
-    public ResponseEntity<?> buscarPedido(@PathVariable String identificador) {
+    // Buscar pedido por número de pedido (para clientes)
+    @GetMapping("/buscar/{numeroPedido}")
+    public ResponseEntity<?> buscarPedido(@PathVariable String numeroPedido) {
         System.out.println("=== BUSCANDO PEDIDO ===");
-        System.out.println("Identificador recibido: " + identificador);
+        System.out.println("Número de pedido: " + numeroPedido);
 
-        Optional<Pedido> pedidoOpt = Optional.empty();
-
-        // Intentar buscar por ID (si es número)
-        try {
-            Integer id = Integer.parseInt(identificador);
-            System.out.println("Intentando buscar por ID: " + id);
-            pedidoOpt = pedidoRepository.findById(id);
-            System.out.println("Resultado por ID: " + (pedidoOpt.isPresent() ? "Encontrado" : "No encontrado"));
-        } catch (NumberFormatException e) {
-            // Buscar por número de pedido
-            System.out.println("Intentando buscar por número de pedido: " + identificador);
-            pedidoOpt = pedidoRepository.findByNumeroPedido(identificador);
-            System.out.println("Resultado por número: " + (pedidoOpt.isPresent() ? "Encontrado" : "No encontrado"));
-        }
+        Optional<Pedido> pedidoOpt = pedidoRepository.findByNumeroPedido(numeroPedido);
 
         if (pedidoOpt.isEmpty()) {
-            System.out.println("Pedido NO encontrado, devolviendo 404");
+            System.out.println("Pedido NO encontrado");
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Pedido no encontrado");
-            errorResponse.put("identificador", identificador);
+            errorResponse.put("numeroPedido", numeroPedido);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
 
@@ -100,6 +86,7 @@ public class PedidoController {
         System.out.println("Pedido encontrado: " + pedido.getNumeroPedido());
 
         Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
         response.put("pedido", pedido);
         response.put("detalles", detalles);
 
@@ -143,12 +130,11 @@ public class PedidoController {
         return ResponseEntity.ok(resumen);
     }
 
-    // Generar número de pedido con formato: PED-20260404-0001
+    // Generar número de pedido con formato: PED-20260406-0001
     private String generarNumeroPedido() {
         LocalDateTime now = LocalDateTime.now();
         String fecha = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-        // Contar pedidos del día
         LocalDateTime inicio = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime fin = now.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
 
@@ -163,6 +149,7 @@ public class PedidoController {
     public ResponseEntity<Map<String, Object>> crearPedido(@RequestBody Map<String, Object> requestBody) {
         try {
             System.out.println("=== CREANDO PEDIDO ===");
+            System.out.println("Request recibido: " + requestBody);
 
             List<Map<String, Object>> items = (List<Map<String, Object>>) requestBody.get("items");
             String metodoPago = (String) requestBody.get("metodoPago");
@@ -185,7 +172,7 @@ public class PedidoController {
 
             // Generar número de pedido
             String numeroPedido = generarNumeroPedido();
-            System.out.println("Número de pedido generado: " + numeroPedido);
+            System.out.println("Número generado: " + numeroPedido);
 
             // Crear pedido
             Pedido pedido = new Pedido();
@@ -198,7 +185,7 @@ public class PedidoController {
             pedido.setUsuario(null);
 
             Pedido pedidoGuardado = pedidoRepository.save(pedido);
-            System.out.println("Pedido guardado con ID: " + pedidoGuardado.getId());
+            System.out.println("Pedido guardado ID: " + pedidoGuardado.getId());
 
             // Crear detalles
             for (Map<String, Object> item : items) {
@@ -214,13 +201,13 @@ public class PedidoController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Pedido creado exitosamente");
             response.put("pedido", pedidoGuardado);
             response.put("numeroPedido", numeroPedido);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            System.err.println("ERROR: " + e.getMessage());
             e.printStackTrace();
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
