@@ -132,7 +132,7 @@ public class AuthController {
         // Generar nuevo código
         String twoFactorCode = generateTwoFactorCode();
         usuario.setTwoFactorCode(twoFactorCode);
-        usuario.setTwoFactorCodeExpiry(LocalDateTime.now().plusMinutes(5));
+        usuario.setTwoFactorCodeExpiry(LocalDateTime.now().plusMinutes(8));
         usuarioRepository.save(usuario);
 
         try {
