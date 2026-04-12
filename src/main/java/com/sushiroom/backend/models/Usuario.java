@@ -26,6 +26,21 @@ public class Usuario {
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
-    // Agrega este campo si no existe
-private Boolean activo = true;
+    private Boolean activo = true;
+
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
+
+    @Column(name = "two_factor_code")
+    private String twoFactorCode;
+
+
+    @Column(name = "two_factor_code_expiry")
+    private LocalDateTime twoFactorCodeExpiry;
 }
