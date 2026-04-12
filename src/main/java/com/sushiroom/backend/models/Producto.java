@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "productos")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,11 +33,22 @@ public class Producto {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
-    @JsonIgnoreProperties({"productos", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "productos", "hibernateLazyInitializer", "handler" })
     private Categoria categoria;
 
     private Boolean activo = true;
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
+
+    @Column(columnDefinition = "TEXT")
+    private String ingredientes;
+
+    public String getIngredientes() {
+        return ingredientes;
+    }
+
+    public void setIngredientes(String ingredientes) {
+        this.ingredientes = ingredientes;
+    }
 }

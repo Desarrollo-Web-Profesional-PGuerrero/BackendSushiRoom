@@ -14,6 +14,7 @@ public class ProductoDTO {
     private Boolean activo;
     private Integer categoriaId;
     private String categoriaNombre;
+    private String ingredientes;
     
     // Constructores
     public ProductoDTO() {}
@@ -48,4 +49,7 @@ public class ProductoDTO {
     
     public String getCategoriaNombre() { return categoriaNombre; }
     public void setCategoriaNombre(String categoriaNombre) { this.categoriaNombre = categoriaNombre; }
+
+    public String getIngredientes() { return ingredientes; }
+    public void setIngredientes(String ingredientes) { this.ingredientes = ingredientes; }
 }
