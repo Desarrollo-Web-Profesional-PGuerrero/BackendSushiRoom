@@ -144,6 +144,7 @@ public class ProductoController {
         producto.setPrecio(dto.getPrecio());
         producto.setImagenUrl(dto.getImagenUrl());
         producto.setActivo(dto.getActivo() != null ? dto.getActivo() : true);
+        producto.setIngredientes(dto.getIngredientes());
 
         // Asignar categoría
         if (dto.getCategoriaId() != null) {
@@ -182,6 +183,7 @@ public class ProductoController {
         dto.setPrecio(producto.getPrecio());
         dto.setImagenUrl(producto.getImagenUrl());
         dto.setActivo(producto.getActivo());
+        dto.setIngredientes(producto.getIngredientes());
 
         if (producto.getCategoria() != null) {
             dto.setCategoriaId(producto.getCategoria().getId());
