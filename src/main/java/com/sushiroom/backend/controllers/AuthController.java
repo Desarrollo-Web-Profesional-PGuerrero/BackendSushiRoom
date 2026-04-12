@@ -47,7 +47,7 @@ public class AuthController {
                 // Generar código 2FA
                 String twoFactorCode = generateTwoFactorCode();
                 usuario.setTwoFactorCode(twoFactorCode);
-                usuario.setTwoFactorCodeExpiry(LocalDateTime.now().plusMinutes(5));
+                usuario.setTwoFactorCodeExpiry(LocalDateTime.now().plusMinutes(8));
                 usuarioRepository.save(usuario);
 
                 // Enviar código por email
