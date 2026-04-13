@@ -9,6 +9,7 @@ import com.sushiroom.backend.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -130,22 +131,9 @@ public class PedidoController {
         return ResponseEntity.ok(resumen);
     }
 
-    // Generar número de pedido con formato: PED-20260406-0001
-    private String generarNumeroPedido() {
-        LocalDateTime now = LocalDateTime.now();
-        String fecha = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-        LocalDateTime inicio = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime fin = now.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
-
-        int count = pedidoRepository.countByFechaPedidoBetween(inicio, fin);
-        int numero = count + 1;
-
-        return String.format("PED-%s-%04d", fecha, numero);
-    }
-
     // Crear nuevo pedido
     @PostMapping
+    @Transactional
     public ResponseEntity<Map<String, Object>> crearPedido(@RequestBody Map<String, Object> requestBody) {
         try {
             System.out.println("=== CREANDO PEDIDO ===");
@@ -170,13 +158,12 @@ public class PedidoController {
                 total = total.add(precio.multiply(new BigDecimal(cantidad)));
             }
 
-            // Generar número de pedido
-            String numeroPedido = generarNumeroPedido();
-            System.out.println("Número generado: " + numeroPedido);
+            // 🔥 PASO 1: Crear pedido con número TEMPORAL (para evitar NOT NULL)
+            String fechaActual = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String numeroTemporal = "TEMP-" + System.currentTimeMillis();
 
-            // Crear pedido
             Pedido pedido = new Pedido();
-            pedido.setNumeroPedido(numeroPedido);
+            pedido.setNumeroPedido(numeroTemporal);  // ← Temporal, no es nulo
             pedido.setFechaPedido(LocalDateTime.now());
             pedido.setEstado("pendiente");
             pedido.setTotal(total);
@@ -185,9 +172,16 @@ public class PedidoController {
             pedido.setUsuario(null);
 
             Pedido pedidoGuardado = pedidoRepository.save(pedido);
+            pedidoRepository.flush();
             System.out.println("Pedido guardado ID: " + pedidoGuardado.getId());
 
-            // Crear detalles
+            // 🔥 PASO 2: Generar número REAL usando el ID
+            String numeroReal = String.format("PED-%s-%04d", fechaActual, pedidoGuardado.getId());
+            pedidoGuardado.setNumeroPedido(numeroReal);
+            pedidoRepository.save(pedidoGuardado);
+            System.out.println("Número de pedido asignado: " + numeroReal);
+
+            // 🔥 PASO 3: Crear detalles del pedido
             for (Map<String, Object> item : items) {
                 DetallePedido detalle = new DetallePedido();
                 detalle.setPedido(pedidoGuardado);
@@ -202,7 +196,7 @@ public class PedidoController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("pedido", pedidoGuardado);
-            response.put("numeroPedido", numeroPedido);
+            response.put("numeroPedido", numeroReal);
 
             return ResponseEntity.ok(response);
 
